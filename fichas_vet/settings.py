@@ -7,16 +7,22 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-key-cambiar-en-produccion-
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 _allowed = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-_railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
-for _host in (_railway_domain, 'healthcheck.railway.app'):
+_railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '').strip()
+# Railway app URLs are *.up.railway.app — ".railway.app" alone does not match them.
+for _host in (_railway_domain, 'healthcheck.railway.app', '.up.railway.app'):
     if _host and _host not in _allowed:
         _allowed.append(_host)
 ALLOWED_HOSTS = [h.strip() for h in _allowed if h.strip()]
 
-_csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
+_csrf = [o.strip() for o in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()]
 if _railway_domain:
     _csrf.append(f'https://{_railway_domain}')
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in _csrf if o.strip()]
+for _host in ALLOWED_HOSTS:
+    if _host and not _host.startswith('.'):
+        _origin = f'https://{_host}'
+        if _origin not in _csrf:
+            _csrf.append(_origin)
+CSRF_TRUSTED_ORIGINS = _csrf
 
 INSTALLED_APPS = [
     'django.contrib.admin',

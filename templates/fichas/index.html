@@ -1,0 +1,150 @@
+{% extends "fichas/base.html" %}
+{% block title %}Dashboard — Fichas Veterinarias{% endblock %}
+
+{% block content %}
+<div class="stats">
+  <div class="stat"><div class="num">{{ stats.total }}</div><div class="lbl">Total fichas</div></div>
+  <div class="stat ok"><div class="num">{{ stats.revisadas }}</div><div class="lbl">Revisadas</div></div>
+  <div class="stat warn"><div class="num">{{ stats.pendientes }}</div><div class="lbl">Procesando / pendientes</div></div>
+  <div class="stat err"><div class="num">{{ stats.errores }}</div><div class="lbl">Con error</div></div>
+</div>
+
+<!-- Upload -->
+<div class="card">
+  <div class="card-title">Subir fichas</div>
+  <form method="post" action="{% url 'upload' %}" enctype="multipart/form-data" id="upload-form">
+    {% csrf_token %}
+    <div class="dropzone" id="dropzone" onclick="document.getElementById('id_archivos').click()">
+      <div style="font-size:36px">📁</div>
+      <p>Arrastrá PDFs o imágenes acá<br><strong>o hacé click para seleccionar</strong></p>
+      <p id="files-selected" style="margin-top:8px;color:#2d6a4f;font-weight:600;"></p>
+    </div>
+    <input type="file" name="archivos" id="id_archivos" multiple accept=".pdf,.jpg,.jpeg,.png,.webp" style="display:none">
+    <div style="margin-top:.75rem;display:flex;gap:8px;align-items:center;">
+      <button type="submit" class="btn btn-green" id="btn-upload" disabled>⬆ Subir y procesar</button>
+      <span style="font-size:12px;color:#777;">El OCR corre en background. Refrescá la página en unos segundos.</span>
+    </div>
+  </form>
+</div>
+
+<!-- Filtros -->
+<div class="search-bar">
+  <form method="get" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+    <input type="text" name="q" value="{{ q }}" placeholder="Buscar propietario, paciente, diagnóstico..." style="min-width:280px;">
+    <select name="estado">
+      <option value="">Todos los estados</option>
+      {% for val, lbl in estados %}
+      <option value="{{ val }}" {% if estado_filtro == val %}selected{% endif %}>{{ lbl }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn">🔍 Filtrar</button>
+    {% if q or estado_filtro %}
+    <a href="{% url 'index' %}" class="btn">✕ Limpiar</a>
+    {% endif %}
+  </form>
+  <span style="margin-left:auto;font-size:12px;color:#777;">{{ page.paginator.count }} resultado(s)</span>
+</div>
+
+<!-- Tabla -->
+<div class="card" style="padding:0;overflow:auto;">
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Estado</th>
+        <th>Propietario</th>
+        <th>Paciente</th>
+        <th>Especie/Raza</th>
+        <th>Peso (kg)</th>
+        <th>RER</th>
+        <th>RED</th>
+        <th>Diagnóstico</th>
+        <th>Fecha</th>
+        <th>Archivo</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ficha in page %}
+      <tr id="row-{{ ficha.pk }}" data-estado="{{ ficha.estado }}">
+        <td>
+          {% if ficha.estado == 'revisado' %}
+            <span class="badge badge-ok">✓ Listo</span>
+          {% elif ficha.estado == 'procesando' %}
+            <span class="badge badge-proc"><span class="spin"></span> Procesando</span>
+          {% elif ficha.estado == 'error' %}
+            <span class="badge badge-err" title="{{ ficha.error_msg }}">✗ Error</span>
+          {% else %}
+            <span class="badge badge-pend">Pendiente</span>
+          {% endif %}
+        </td>
+        <td>{{ ficha.propietario|default:"—" }}</td>
+        <td><a href="{% url 'detalle' ficha.pk %}">{{ ficha.paciente|default:"Sin nombre" }}</a></td>
+        <td>{{ ficha.especie_raza|default:"—" }}</td>
+        <td>{{ ficha.peso_actual_kg|default:"—" }}</td>
+        <td>{{ ficha.rer_kcal|default:"—" }}</td>
+        <td>{{ ficha.red_kcal|default:"—" }}</td>
+        <td>{{ ficha.diagnostico|truncatechars:40|default:"—" }}</td>
+        <td style="white-space:nowrap;">{{ ficha.fecha_consulta|default:"—" }}</td>
+        <td style="font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ ficha.nombre }}">{{ ficha.nombre }}</td>
+        <td style="white-space:nowrap;">
+          <a href="{% url 'detalle' ficha.pk %}" class="btn btn-sm">Ver/Editar</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="11" style="text-align:center;padding:2rem;color:#aaa;">
+        No hay fichas{% if q or estado_filtro %} con ese filtro{% endif %}. Subí algunas arriba.
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Paginación -->
+{% if page.has_other_pages %}
+<div class="pagination">
+  {% if page.has_previous %}
+  <a href="?page={{ page.previous_page_number }}&q={{ q }}&estado={{ estado_filtro }}">&laquo; Anterior</a>
+  {% endif %}
+  <span class="current">{{ page.number }} / {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}
+  <a href="?page={{ page.next_page_number }}&q={{ q }}&estado={{ estado_filtro }}">Siguiente &raquo;</a>
+  {% endif %}
+</div>
+{% endif %}
+
+<script>
+// Drag & drop
+const dz = document.getElementById('dropzone');
+const inp = document.getElementById('id_archivos');
+const btnUp = document.getElementById('btn-upload');
+const filesLabel = document.getElementById('files-selected');
+
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  inp.files = e.dataTransfer.files;
+  updateFilesLabel();
+});
+inp.addEventListener('change', updateFilesLabel);
+
+function updateFilesLabel() {
+  const n = inp.files.length;
+  if (n > 0) {
+    filesLabel.textContent = n + ' archivo(s) seleccionado(s)';
+    btnUp.disabled = false;
+  } else {
+    filesLabel.textContent = '';
+    btnUp.disabled = true;
+  }
+}
+
+// Polling para fichas en procesamiento
+const procesando = [...document.querySelectorAll('[data-estado="procesando"],[data-estado="pendiente"]')]
+  .map(r => r.id.replace('row-', ''));
+
+if (procesando.length > 0) {
+  setTimeout(() => location.reload(), 4000);
+}
+</script>
+{% endblock %}

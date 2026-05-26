@@ -1,0 +1,220 @@
+{% extends "fichas/base.html" %}
+{% block title %}{{ ficha.paciente|default:"Ficha" }} — Fichas Veterinarias{% endblock %}
+
+{% block content %}
+<div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap;">
+  <a href="{% url 'index' %}" class="btn btn-sm">← Volver</a>
+  <h1 class="page-title" style="margin:0;">
+    {{ ficha.paciente|default:"Sin nombre" }}
+    {% if ficha.propietario %}<span style="font-weight:400;color:#777;font-size:15px;"> — {{ ficha.propietario }}</span>{% endif %}
+  </h1>
+  <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;">
+    {% if ficha.estado == 'revisado' %}
+      <span class="badge badge-ok" style="padding:5px 12px;">✓ Procesado</span>
+    {% elif ficha.estado == 'procesando' %}
+      <span class="badge badge-proc" id="estado-badge" style="padding:5px 12px;"><span class="spin"></span> Procesando OCR...</span>
+    {% elif ficha.estado == 'error' %}
+      <span class="badge badge-err" style="padding:5px 12px;">✗ Error</span>
+    {% else %}
+      <span class="badge badge-pend" style="padding:5px 12px;">Pendiente</span>
+    {% endif %}
+    <form method="post" action="{% url 'reprocesar' ficha.pk %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm">🔄 Re-procesar OCR</button>
+    </form>
+    <form method="post" action="{% url 'eliminar' ficha.pk %}" style="display:inline;"
+          onsubmit="return confirm('¿Eliminar esta ficha?')">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm btn-red">🗑 Eliminar</button>
+    </form>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 400px;gap:1rem;align-items:start;">
+
+  <!-- Formulario de edición -->
+  <div>
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="card">
+        <div class="card-title">Propietario</div>
+        <div class="form-grid">
+          <div class="form-group span2">
+            <label>Propietario</label>{{ form.propietario }}
+          </div>
+          <div class="form-group span2">
+            <label>Teléfono</label>{{ form.telefono }}
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Paciente</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Nombre</label>{{ form.paciente }}
+          </div>
+          <div class="form-group">
+            <label>Especie / Raza</label>{{ form.especie_raza }}
+          </div>
+          <div class="form-group">
+            <label>Sexo</label>{{ form.sexo }}
+          </div>
+          <div class="form-group">
+            <label>Edad</label>{{ form.edad }}
+          </div>
+          <div class="form-group">
+            <label>Peso actual (kg)</label>{{ form.peso_actual_kg }}
+          </div>
+          <div class="form-group">
+            <label>Peso ideal (kg)</label>{{ form.peso_ideal_kg }}
+          </div>
+          <div class="form-group">
+            <label>Fecha consulta</label>{{ form.fecha_consulta }}
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Consulta clínica</div>
+        <div class="form-grid">
+          <div class="form-group span4">
+            <label>Motivo de consulta</label>{{ form.motivo_consulta }}
+          </div>
+          <div class="form-group span4">
+            <label>Diagnóstico</label>{{ form.diagnostico }}
+          </div>
+          <div class="form-group span4">
+            <label>Análisis clínicos</label>{{ form.analisis_clinicos }}
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Requerimientos nutricionales</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>RER (kcal/día)</label>{{ form.rer_kcal }}
+          </div>
+          <div class="form-group">
+            <label>RED (kcal/día)</label>{{ form.red_kcal }}
+          </div>
+          <div class="form-group">
+            <label>Factor RED</label>{{ form.factor_red }}
+          </div>
+          <div></div>
+          <div class="form-group">
+            <label>PB mín (g)</label>{{ form.pb_min_g }}
+          </div>
+          <div class="form-group">
+            <label>PB máx (g)</label>{{ form.pb_max_g }}
+          </div>
+          <div class="form-group">
+            <label>EE mín (g)</label>{{ form.ee_min_g }}
+          </div>
+          <div class="form-group">
+            <label>EE máx (g)</label>{{ form.ee_max_g }}
+          </div>
+          <div class="form-group">
+            <label>Co (g)</label>{{ form.co_g }}
+          </div>
+          <div class="form-group">
+            <label>P (g)</label>{{ form.p_g }}
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Dieta y seguimiento</div>
+        <div class="form-grid">
+          <div class="form-group span4">
+            <label>Dieta detalle</label>{{ form.dieta_detalle }}
+          </div>
+          <div class="form-group">
+            <label>Comidas/día</label>{{ form.comidas_por_dia }}
+          </div>
+          <div class="form-group span3">
+            <label>Suplementos</label>{{ form.suplementos }}
+          </div>
+          <div class="form-group">
+            <label>Control próximo (días)</label>{{ form.control_dias }}
+          </div>
+          <div class="form-group span3">
+            <label>Notas adicionales</label>{{ form.notas_adicionales }}
+          </div>
+          <div class="form-group">
+            <label>Estado</label>{{ form.estado }}
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:.5rem;">
+        <button type="submit" class="btn btn-green">💾 Guardar cambios</button>
+        <a href="{% url 'index' %}" class="btn">Cancelar</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Panel lateral: imagen + OCR crudo -->
+  <div>
+    {% if ficha.archivo %}
+    <div class="card">
+      <div class="card-title">Archivo original</div>
+      {% if ficha.nombre|lower|slice:"-4:" == ".pdf" %}
+        <a href="{{ ficha.archivo.url }}" target="_blank" class="btn btn-sm">📄 Abrir PDF</a>
+        <p style="font-size:12px;color:#888;margin-top:8px;">{{ ficha.nombre }}</p>
+      {% else %}
+        <img src="{{ ficha.archivo.url }}" alt="Ficha" style="max-width:100%;border-radius:6px;border:1px solid #e2e8e0;">
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if ficha.ocr_texto %}
+    <div class="card">
+      <div class="card-title">Texto OCR crudo</div>
+      <pre style="font-size:11px;line-height:1.6;white-space:pre-wrap;max-height:400px;overflow:auto;background:#f8f8f5;padding:.75rem;border-radius:6px;border:1px solid #e2e8e0;">{{ ficha.ocr_texto }}</pre>
+    </div>
+    {% endif %}
+
+    {% if ficha.error_msg %}
+    <div class="card" style="border-color:#fca5a5;">
+      <div class="card-title" style="color:#b91c1c;">Error de procesamiento</div>
+      <pre style="font-size:11px;color:#7f1d1d;white-space:pre-wrap;">{{ ficha.error_msg }}</pre>
+      <p style="margin-top:.75rem;font-size:12px;color:#777;">
+        Verificá que ANTHROPIC_API_KEY esté configurada y que el archivo sea legible.
+      </p>
+    </div>
+    {% endif %}
+
+    <div class="card" style="font-size:12px;color:#777;line-height:1.8;">
+      <div class="card-title">Metadata</div>
+      <div><strong>Archivo:</strong> {{ ficha.nombre }}</div>
+      <div><strong>Páginas:</strong> {{ ficha.paginas }}</div>
+      <div><strong>Backend:</strong> {{ ficha.ocr_backend|default:"—" }}</div>
+      <div><strong>Subida:</strong> {{ ficha.creado|date:"d/m/Y H:i" }}</div>
+      <div><strong>Procesado:</strong> {{ ficha.procesado|date:"d/m/Y H:i"|default:"—" }}</div>
+    </div>
+  </div>
+
+</div>
+
+{% if ficha.estado == 'procesando' or ficha.estado == 'pendiente' %}
+<script>
+  // Polling hasta que el OCR termine
+  function checkEstado() {
+    fetch("{% url 'estado_json' ficha.pk %}")
+      .then(r => r.json())
+      .then(data => {
+        if (data.estado === 'revisado' || data.estado === 'error') {
+          location.reload();
+        } else {
+          setTimeout(checkEstado, 3000);
+        }
+      })
+      .catch(() => setTimeout(checkEstado, 5000));
+  }
+  setTimeout(checkEstado, 3000);
+</script>
+{% endif %}
+{% endblock %}

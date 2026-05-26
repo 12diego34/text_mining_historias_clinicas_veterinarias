@@ -8,8 +8,9 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 _allowed = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 _railway_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
-if _railway_domain and _railway_domain not in _allowed:
-    _allowed.append(_railway_domain)
+for _host in (_railway_domain, 'healthcheck.railway.app'):
+    if _host and _host not in _allowed:
+        _allowed.append(_host)
 ALLOWED_HOSTS = [h.strip() for h in _allowed if h.strip()]
 
 _csrf = os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')

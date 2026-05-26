@@ -32,7 +32,7 @@ En el servicio → **Variables**, agregá:
 
 ## 4. Verificar deploy
 
-- Los logs deben mostrar `migrate` y luego `gunicorn` escuchando en `$PORT`.
+- Los logs deben mostrar `migrate` en **pre-deploy** y luego `gunicorn` escuchando en el puerto que define Railway (`$PORT`). El `startCommand` va envuelto en `sh -c` para que `$PORT` no quede como texto literal en deploys con Dockerfile.
 - Abrí la URL pública: deberías ver el dashboard de fichas.
 - Healthcheck: `GET /` (configurado en `railway.toml`).
 

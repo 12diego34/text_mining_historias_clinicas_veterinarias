@@ -3,7 +3,8 @@ builder = "dockerfile"
 
 [deploy]
 preDeployCommand = "python manage.py migrate --noinput"
-startCommand = "gunicorn fichas_vet.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+# Dockerfile deploys use exec form: wrap in sh -c so $PORT expands (not literal "$PORT").
+startCommand = "sh -c \"exec gunicorn fichas_vet.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120\""
 healthcheckPath = "/"
 healthcheckTimeout = 120
 restartPolicyType = "on_failure"

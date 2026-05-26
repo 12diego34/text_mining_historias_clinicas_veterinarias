@@ -1,6 +1,6 @@
 import csv
-import io
 import threading
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
@@ -26,6 +26,12 @@ def _procesar_en_hilo(ficha_id: int):
 
 # ── Vistas ─────────────────────────────────────────────────────────────────────
 
+def health(request):
+    """Healthcheck público para Railway (sin login)."""
+    return HttpResponse('ok', content_type='text/plain')
+
+
+@login_required
 def index(request):
     """Dashboard principal con lista de fichas y filtros."""
     qs = Ficha.objects.all()
@@ -63,6 +69,7 @@ def index(request):
     })
 
 
+@login_required
 def upload(request):
     """Recibe uno o más archivos, los guarda y dispara el OCR en background."""
     if request.method != 'POST':
@@ -84,6 +91,7 @@ def upload(request):
     return redirect('index')
 
 
+@login_required
 def detalle(request, pk):
     """Ver y editar los campos de una ficha."""
     ficha = get_object_or_404(Ficha, pk=pk)
@@ -100,6 +108,7 @@ def detalle(request, pk):
     return render(request, 'fichas/detalle.html', {'ficha': ficha, 'form': form})
 
 
+@login_required
 def reprocesar(request, pk):
     """Vuelve a correr el OCR sobre una ficha (útil si falló o querés actualizar)."""
     ficha = get_object_or_404(Ficha, pk=pk)
@@ -112,6 +121,7 @@ def reprocesar(request, pk):
     return redirect('detalle', pk=pk)
 
 
+@login_required
 def estado_json(request, pk):
     """Endpoint AJAX para polling del estado de procesamiento."""
     ficha = get_object_or_404(Ficha, pk=pk)
@@ -122,6 +132,7 @@ def estado_json(request, pk):
     })
 
 
+@login_required
 def exportar_csv(request):
     """Exporta todas las fichas (o las filtradas) a CSV."""
     qs = Ficha.objects.all()
@@ -169,6 +180,7 @@ def exportar_csv(request):
     return response
 
 
+@login_required
 def eliminar(request, pk):
     """Elimina una ficha (POST only)."""
     if request.method == 'POST':

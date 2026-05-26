@@ -21,8 +21,12 @@ En el servicio → **Variables**, agregá:
 | `ANTHROPIC_API_KEY` | `sk-ant-...` | Solo si `OCR_BACKEND=claude` |
 | `CLAUDE_MODEL` | `claude-sonnet-4-5` | Opcional |
 | `ALLOWED_HOSTS` | `localhost,127.0.0.1,.railway.app` | Railway también setea `RAILWAY_PUBLIC_DOMAIN` |
+| `APP_USERNAME` | `vetadmin` | Usuario para ingresar a la app |
+| `APP_PASSWORD` | contraseña segura | **Obligatorio** — se crea/actualiza en cada arranque |
 
 `RAILWAY_PUBLIC_DOMAIN` lo inyecta Railway solo; no hace falta copiarlo a mano.
+
+Al primer deploy con base vacía, `seed_demo_data` carga las **3 fichas demo** y sus PDFs desde el repo.
 
 ## 3. Dominio público
 
@@ -35,7 +39,8 @@ En el servicio → **Variables**, agregá:
 - Los logs deben mostrar `migrate` y luego `gunicorn` en el **mismo contenedor** (`startCommand` con `sh -c`). No usar `preDeployCommand` con SQLite: ese paso corre en un contenedor efímero y la base no llega al servicio principal.
 - El `startCommand` va envuelto en `sh -c` para que `$PORT` no quede como texto literal en deploys con Dockerfile.
 - Abrí la URL pública: deberías ver el dashboard de fichas.
-- Healthcheck: `GET /` (configurado en `railway.toml`).
+- Healthcheck: `GET /health/` (público, sin login).
+- Login: `https://tu-app.up.railway.app/login/` con `APP_USERNAME` / `APP_PASSWORD`.
 
 ## 5. Limitaciones en Railway (importante)
 

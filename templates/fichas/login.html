@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ingresar — Fichas Veterinarias</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(160deg, #1b4332 0%, #2d6a4f 45%, #f4f4f0 45%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e2e8e0;
+      padding: 2rem;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.12);
+    }
+    h1 { font-size: 20px; color: #1b4332; margin-bottom: .25rem; }
+    .sub { font-size: 13px; color: #666; margin-bottom: 1.5rem; }
+    label { font-size: 12px; font-weight: 600; color: #555; display: block; margin-bottom: 4px; }
+    input[type=text], input[type=password] {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 14px;
+      margin-bottom: 1rem;
+    }
+    input:focus { outline: none; border-color: #2d6a4f; }
+    .btn {
+      width: 100%;
+      padding: 10px;
+      background: #2d6a4f;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover { background: #245a42; }
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🐾 Fichas Veterinarias</h1>
+    <p class="sub">Ingresá con tu usuario para acceder al sistema.</p>
+
+    {% if form.errors %}
+    <div class="error">Usuario o contraseña incorrectos.</div>
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <label for="id_username">Usuario</label>
+      <input type="text" name="username" id="id_username" autofocus required autocomplete="username">
+
+      <label for="id_password">Contraseña</label>
+      <input type="password" name="password" id="id_password" required autocomplete="current-password">
+
+      <button type="submit" class="btn">Ingresar</button>
+    </form>
+  </div>
+</body>
+</html>

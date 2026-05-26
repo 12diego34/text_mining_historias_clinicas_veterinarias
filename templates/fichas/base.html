@@ -104,8 +104,15 @@
 <nav>
   <span class="brand">🐾 Fichas Veterinarias</span>
   <a href="{% url 'index' %}">Inicio</a>
-  <a href="/admin/">Admin</a>
+  {% if user.is_staff %}<a href="/admin/">Admin</a>{% endif %}
   <span class="spacer"></span>
+  {% if user.is_authenticated %}
+  <span style="color:#a8d5ba;font-size:13px;">{{ user.username }}</span>
+  <form method="post" action="{% url 'logout' %}" style="display:inline;margin:0;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-sm" style="background:transparent;border-color:#a8d5ba;color:#a8d5ba;">Salir</button>
+  </form>
+  {% endif %}
   <a href="{% url 'exportar_csv' %}?{{ request.GET.urlencode }}">⬇ Exportar CSV</a>
 </nav>
 

@@ -2,9 +2,10 @@
 builder = "dockerfile"
 
 [deploy]
-preDeployCommand = "python manage.py migrate --noinput"
-# Dockerfile deploys use exec form: wrap in sh -c so $PORT expands (not literal "$PORT").
-startCommand = "sh -c \"exec gunicorn fichas_vet.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120\""
+# Migrate in start (same container as app). preDeploy uses an ephemeral container;
+# with SQLite the DB file from migrate is discarded before gunicorn starts.
+# sh -c expands $PORT (Dockerfile exec form does not).
+startCommand = "sh -c \"python manage.py migrate --noinput && exec gunicorn fichas_vet.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120\""
 healthcheckPath = "/"
-healthcheckTimeout = 120
+healthcheckTimeout = 180
 restartPolicyType = "on_failure"

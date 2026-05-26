@@ -1,8 +1,24 @@
-# 🐾 Fichas Veterinarias
+# 🐾 Fichas Veterinarias — Text Mining de Historias Clínicas
+
+**Digitaliza fichas veterinarias manuscritas con IA:** subís un PDF o imagen, la app extrae **27 campos estructurados** (paciente, análisis, RED, dieta, controles), permitís revisar y corregir, y exportás todo a CSV.
+
+[![Django](https://img.shields.io/badge/Django-4.2%2B-green)](https://www.djangoproject.com/)
+[![Python](https://img.shields.io/badge/Python-3.12-blue)](https://www.python.org/)
+[![OCR](https://img.shields.io/badge/OCR-Claude%20%7C%20Ollama-purple)](https://www.anthropic.com/)
+[![Deploy](https://img.shields.io/badge/Deploy-Railway-black)](https://railway.app/)
+
+| | |
+|---|---|
+| **Problema** | Fichas en papel: datos valiosos pero imposibles de buscar, filtrar o analizar a escala |
+| **Solución** | OCR con visión (Claude u Ollama) + base de datos + dashboard web + exportación |
+| **Stack** | Django · SQLite/Postgres · pdf2image · Docker · Railway |
+| **Repo** | [12diego34/text_mining_historias_clinicas_veterinarias](https://github.com/12diego34/text_mining_historias_clinicas_veterinarias) |
+
+---
 
 Una veterinaria atiende decenas de pacientes por semana. Cada consulta termina en una ficha manuscrita: el nombre del animal, su peso, los análisis de sangre, los cálculos de RER y RED, la dieta indicada con gramajes exactos, los suplementos, la fecha del próximo control. Esa información existe, pero está atrapada en papel.
 
-Este proyecto la libera.
+**Este proyecto la libera.**
 
 ---
 
